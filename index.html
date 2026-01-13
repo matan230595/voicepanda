@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="VoiceNote">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2563eb">
+    
+    <title>VoiceNote Ultimate</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%232563eb%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2260%22>🎙️</text></svg>">
+
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger-color: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --history-item-bg: #f1f5f9;
+            --safe-area-top: env(safe-area-inset-top);
+            --safe-area-bottom: env(safe-area-inset-bottom);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+            --history-item-bg: #334155;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+            padding-top: max(15px, var(--safe-area-top));
+            padding-bottom: max(15px, var(--safe-area-bottom));
+        }
+
+        .container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            height: 90vh; /* גובה מותאם */
+            max-height: 1000px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- Header --- */
+        header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left { display: flex; gap: 8px; align-items: center; }
+        .header-right { display: flex; gap: 6px; align-items: center; }
+
+        .app-title { font-size: 1.1rem; font-weight: 800; color: var(--primary-color); display: flex; align-items: center; gap: 6px; }
+        
+        select {
+            padding: 6px 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 0.8rem;
+            outline: none;
+            font-weight: 500;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-btn:hover { color: var(--primary-color); background: rgba(0,0,0,0.05); }
+        .icon-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
+        
+        /* Font size controls */
+        .font-controls { display: flex; background: var(--bg-color); border-radius: 8px; margin-left: 5px; border: 1px solid var(--border-color); overflow: hidden; }
+        .font-btn { border: none; background: none; padding: 6px 10px; cursor: pointer; color: var(--text-color); font-size: 0.85rem; font-weight: bold; }
+        .font-btn:first-child { border-left: 1px solid var(--border-color); }
+        .font-btn:active { background: rgba(0,0,0,0.1); }
+
+        /* --- Main --- */
+        main { flex: 1; position: relative; display: flex; flex-direction: column; }
+
+        textarea {
+            flex: 1;
+            width: 100%;
+            border: none;
+            padding: 20px 20px 60px 20px;
+            resize: none;
+            font-size: 20px; /* ברירת מחדל גדולה יותר */
+            line-height: 1.5;
+            outline: none;
+            background: transparent;
+            color: var(--text-color);
+        }
+
+        .counters {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: var(--card-bg);
+            padding: 4px 8px;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0.8;
+            border: 1px solid var(--border-color);
+            z-index: 5;
+            font-weight: 500;
+        }
+
+        /* --- Record Button --- */
+        .record-wrapper {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        #recordBtn {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #recordBtn:active { transform: scale(0.95); }
+
+        #recordBtn svg { width: 36px; height: 36px; fill: currentColor; }
+
+        #recordBtn.recording {
+            background-color: var(--danger-color);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 12px;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 10px 5px;
+            border-radius: 12px;
+            flex: 1;
+            transition: all 0.2s;
+        }
+
+        .action-btn:active { transform: scale(0.95); }
+        .action-btn.active-action { color: var(--primary-color); border-color: var(--primary-color); background: rgba(37, 99, 235, 0.05); }
+        .action-btn.btn-clear:active { color: var(--danger-color); border-color: var(--danger-color); background: #fee2e2; }
+        .action-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+        /* --- Modals --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .modal.open { display: flex; opacity: 1; }
+        
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+        .modal.open .modal-content { transform: translateY(0); }
+        
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-color);
+        }
+        .modal-header h3 { margin: 0; color: var(--text-color); font-size: 1.1rem; }
+        .close-btn { background: none; border: none; font-size: 1.8rem; line-height: 1; cursor: pointer; color: var(--text-secondary); padding: 0 5px; }
+
+        .modal-body { padding: 0; overflow-y: auto; display: flex; flex-direction: column; }
+        
+        /* Search Bar inside History */
+        .search-container {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background: var(--card-bg);
+            z-index: 5;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+        }
+        .search-input:focus { border-color: var(--primary-color); }
+
+        .history-list { list-style: none; padding: 15px; }
+        .history-item {
+            background: var(--history-item-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .history-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500; }
+        .history-preview { font-size: 1rem; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 12px; }
+        
+        .history-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn-small { padding: 6px 12px; border-radius: 6px; border: none; font-size: 0.8rem; cursor: pointer; font-weight: 500; }
+        .btn-load { background: var(--primary-color); color: white; }
+        .btn-del { background: #fee2e2; color: var(--danger-color); }
+
+        .export-section { padding: 15px; border-top: 1px solid var(--border-color); text-align: center; background: var(--bg-color); }
+        .btn-export-all { width: 100%; padding: 12px; background: var(--text-color); color: var(--bg-color); border: none; border-radius: 10px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        /* Installation Instructions */
+        .install-guide { padding: 20px; line-height: 1.6; font-size: 0.95rem; color: var(--text-color); }
+        .install-guide ol { padding-right: 20px; margin-top: 10px; }
+        .install-guide li { margin-bottom: 8px; }
+
+        .status-msg {
+            position: absolute;
+            top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--primary-color); color: white;
+            padding: 6px 16px; border-radius: 20px; font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            z-index: 20;
+        }
+        .status-msg.visible { opacity: 1; }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #475569; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="header-right">
+            <button class="icon-btn" onclick="toggleHistory()" title="היסטוריה וחיפוש">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </button>
+            <div class="font-controls">
+                <button class="font-btn" onclick="changeFontSize(2)">A+</button>
+                <button class="font-btn" onclick="changeFontSize(-2)">A-</button>
+            </div>
+        </div>
+        
+        <div class="app-title">VoiceNote</div>
+
+        <div class="header-left">
+            <button class="icon-btn" onclick="toggleInstall()" title="התקן אפליקציה">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </button>
+            <button class="icon-btn" onclick="toggleTheme()" title="מצב לילה">
+                <svg id="themeIcon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
+            <select id="langSelect">
+                <option value="he-IL">עברית</option>
+                <option value="en-US">English</option>
+            </select>
+        </div>
+    </header>
+
+    <main>
+        <div id="status" class="status-msg">מקשיב...</div>
+        <textarea id="output" placeholder="התחל להקליט או הקלד כאן..." dir="rtl"></textarea>
+        <div class="counters" id="counters">מילים: 0 | תווים: 0</div>
+        
+        <div class="record-wrapper">
+            <button id="recordBtn" aria-label="התחל הקלטה">
+                <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+            </button>
+        </div>
+    </main>
+
+    <footer>
+        <button class="action-btn btn-clear" onclick="clearText(true)" title="חדש ושמור בארכיון">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+            חדש
+        </button>
+        <button class="action-btn" onclick="copyText(this)">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            העתק
+        </button>
+        <button class="action-btn" onclick="saveFile(this)">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            שמור
+        </button>
+        <button class="action-btn" onclick="shareText(this)">
+            <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            שלח
+        </button>
+    </footer>
+</div>
+
+<div id="installModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>התקנת האפליקציה</h3>
+            <button class="close-btn" onclick="toggleInstall()">&times;</button>
+        </div>
+        <div class="install-guide">
+            <p>כדי להתקין את האפליקציה ולעבוד במצב מסך מלא:</p>
+            <div id="ios-guide" style="display:none; margin-top:15px; background:rgba(37,99,235,0.1); padding:10px; border-radius:8px;">
+                <strong>באייפון (Safari):</strong>
+                <ol>
+                    <li>לחץ על כפתור ה"שתף" <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> למטה בדפדפן.</li>
+                    <li>גלול למטה ובחר <strong>"הוסף למסך הבית"</strong>.</li>
+                </ol>
+            </div>
+            <div id="android-guide" style="display:none; margin-top:15px; background:rgba(37,99,235,0.1); padding:10px; border-radius:8px;">
+                <strong>באנדרואיד (Chrome):</strong>
+                <ol>
+                    <li>לחץ על שלוש הנקודות <svg width="4" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg> למעלה בדפדפן.</li>
+                    <li>בחר <strong>"הוסף למסך הבית"</strong> או "התקן אפליקציה".</li>
+                </ol>
+            </div>
+             <div id="desktop-guide" style="display:none; margin-top:15px;">
+                <strong>במחשב (Chrome/Edge):</strong>
+                <ol>
+                    <li>לחץ על האייקון של המסך עם החץ בשורת הכתובת.</li>
+                    <li>או בתפריט: שמירה ושיתוף > צור קיצור דרך > סמן "פתח כחלון".</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>היסטוריה</h3>
+            <button class="close-btn" onclick="toggleHistory()">&times;</button>
+        </div>
+        <div class="search-container">
+            <input type="text" id="historySearch" class="search-input" placeholder="חפש בהיסטוריה..." onkeyup="filterHistory()">
+        </div>
+        
+        <div class="modal-body">
+            <ul id="historyList" class="history-list">
+                </ul>
+        </div>
+        <div class="export-section">
+            <button class="btn-export-all" onclick="exportAllHistory()">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                גיבוי מלא (CSV)
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- משתנים גלובליים ---
+    const recordBtn = document.getElementById('recordBtn');
+    const output = document.getElementById('output');
+    const langSelect = document.getElementById('langSelect');
+    const statusMsg = document.getElementById('status');
+    const counters = document.getElementById('counters');
+    const themeIcon = document.getElementById('themeIcon');
+    
+    let isRecording = false;
+    let shouldBeRecording = false; // למנגנון Auto Restart
+    let recognition;
+    let wakeLock = null;
+    let currentFontSize = 20;
+
+    // --- אתחול ---
+    window.onload = function() {
+        // טעינת טיוטה
+        const savedText = localStorage.getItem('voiceNoteDraft');
+        if (savedText) { output.value = savedText; updateCounters(); }
+        
+        // טעינת עיצוב
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); updateThemeIcon(true); }
+        
+        // טעינת גודל פונט
+        const savedSize = localStorage.getItem('fontSize');
+        if (savedSize) {
+            currentFontSize = parseInt(savedSize);
+            output.style.fontSize = currentFontSize + 'px';
+        }
+
+        // זיהוי מערכת הפעלה להצגת הוראות התקנה מתאימות
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            document.getElementById('ios-guide').style.display = 'block';
+        } else if (/android/i.test(userAgent)) {
+            document.getElementById('android-guide').style.display = 'block';
+        } else {
+            document.getElementById('desktop-guide').style.display = 'block';
+        }
+    }
+
+    // --- שמירת טיוטה בזמן אמת ---
+    output.addEventListener('input', () => {
+        localStorage.setItem('voiceNoteDraft', output.value);
+        updateCounters();
+    });
+
+    // --- ניהול גודל פונט ---
+    function changeFontSize(delta) {
+        currentFontSize += delta;
+        if (currentFontSize < 14) currentFontSize = 14;
+        if (currentFontSize > 48) currentFontSize = 48;
+        output.style.fontSize = currentFontSize + 'px';
+        localStorage.setItem('fontSize', currentFontSize);
+    }
+
+    // --- ניהול היסטוריה ---
+    function addToHistory(text) {
+        if (!text || text.trim().length < 2) return;
+        let history = JSON.parse(localStorage.getItem('voiceNoteHistory') || '[]');
+        const newEntry = { id: Date.now(), text: text, date: new Date().toLocaleString('he-IL'), lang: langSelect.value };
+        history.unshift(newEntry);
+        // שמירת 100 פריטים אחרונים
+        if (history.length > 100) history.pop();
+        localStorage.setItem('voiceNoteHistory', JSON.stringify(history));
+    }
+
+    function renderHistory(filterText = '') {
+        const list = document.getElementById('historyList');
+        let history = JSON.parse(localStorage.getItem('voiceNoteHistory') || '[]');
+        
+        // סינון לפי חיפוש
+        if (filterText) {
+            history = history.filter(item => item.text.toLowerCase().includes(filterText.toLowerCase()));
+        }
+        
+        list.innerHTML = '';
+        if (history.length === 0) { 
+            list.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:20px;">' + (filterText ? 'לא נמצאו תוצאות' : 'אין היסטוריה שמורה') + '</div>'; 
+            return; 
+        }
+
+        history.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'history-item';
+            // הדגשת מילות חיפוש אם יש
+            let displayText = item.text;
+            
+            li.innerHTML = `
+                <div class="history-meta"><span>${item.date}</span><span>${item.text.length} תווים</span></div>
+                <div class="history-preview" dir="${item.lang === 'he-IL' ? 'rtl' : 'ltr'}">${displayText}</div>
+                <div class="history-actions">
+                    <button class="btn-small btn-del" onclick="deleteHistoryItem(${item.id})">מחק</button>
+                    <button class="btn-small btn-load" onclick="loadHistoryItem(${item.id})">טען</button>
+                </div>`;
+            list.appendChild(li);
+        });
+    }
+
+    // --- מנוע חיפוש בהיסטוריה ---
+    function filterHistory() {
+        const input = document.getElementById('historySearch');
+        renderHistory(input.value);
+    }
+
+    function exportAllHistory() {
+        const history = JSON.parse(localStorage.getItem('voiceNoteHistory') || '[]');
+        if (history.length === 0) { alert("אין היסטוריה לייצוא"); return; }
+        
+        let csvContent = "\uFEFFתאריך,שפה,תוכן\n";
+        history.forEach(item => {
+            let safeText = item.text.replace(/"/g, '""').replace(/\n/g, " ");
+            csvContent += `"${item.date}","${item.lang}","${safeText}"\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const date = new Date().toISOString().slice(0,10);
+        link.href = URL.createObjectURL(blob);
+        link.download = `VoiceNote_Backup_${date}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function loadHistoryItem(id) {
+        const history = JSON.parse(localStorage.getItem('voiceNoteHistory') || '[]');
+        const item = history.find(i => i.id === id);
+        if (item) {
+            if (output.value.trim() !== '' && !confirm("להחליף את הטקסט הנוכחי?")) return;
+            output.value = item.text;
+            localStorage.setItem('voiceNoteDraft', item.text);
+            updateCounters();
+            toggleHistory();
+        }
+    }
+
+    function deleteHistoryItem(id) {
+        if (!confirm("למחוק פריט זה?")) return;
+        let history = JSON.parse(localStorage.getItem('voiceNoteHistory') || '[]');
+        history = history.filter(i => i.id !== id);
+        localStorage.setItem('voiceNoteHistory', JSON.stringify(history));
+        // רענון הרשימה עם החיפוש הנוכחי
+        filterHistory(); 
+    }
+
+    function clearText(manual = false) {
+        if (output.value.trim() === '') return;
+        addToHistory(output.value);
+        const btn = document.querySelector('.btn-clear');
+        const originalHtml = btn.innerHTML;
+        output.value = "";
+        localStorage.setItem('voiceNoteDraft', "");
+        updateCounters();
+        if (manual) {
+            btn.classList.add('active-action');
+            btn.innerHTML = `✔ נשמר`;
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.classList.remove('active-action');
+            }, 1500);
+        }
+    }
+
+    function updateCounters() {
+        const text = output.value;
+        const charCount = text.length;
+        const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+        counters.innerText = `מילים: ${wordCount} | תווים: ${charCount}`;
+    }
+
+    // --- זיהוי דיבור משופר ---
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+    } else {
+        alert("הדפדפן לא נתמך. אנא השתמש ב-Google Chrome.");
+        recordBtn.disabled = true;
+    }
+
+    function replaceCommands(text, lang) {
+        if (lang === 'he-IL') {
+            return text.replace(/נקודה/g, ".").replace(/פסיק/g, ",").replace(/סימן שאלה/g, "?").replace(/סימן קריאה/g, "!").replace(/שורה חדשה/g, "\n");
+        }
+        return text;
+    }
+
+    recordBtn.addEventListener('click', () => {
+        if (!recognition) return;
+        if (isRecording) {
+            shouldBeRecording = false;
+            recognition.stop();
+        } else {
+            shouldBeRecording = true;
+            recognition.lang = langSelect.value;
+            recognition.start();
+        }
+    });
+
+    if (recognition) {
+        recognition.onstart = async () => {
+            isRecording = true;
+            recordBtn.classList.add('recording');
+            statusMsg.classList.add('visible');
+            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+        };
+
+        recognition.onend = () => {
+            isRecording = false;
+            if (shouldBeRecording) {
+                // Auto-Restart Logic
+                try { recognition.start(); return; } catch(err) { shouldBeRecording = false; }
+            }
+            recordBtn.classList.remove('recording');
+            statusMsg.classList.remove('visible');
+            if (wakeLock) wakeLock.release().then(()=>wakeLock=null);
+        };
+
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+            let finalTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+                else interimTranscript += event.results[i][0].transcript;
+            }
+            if (finalTranscript) {
+                finalTranscript = replaceCommands(finalTranscript, recognition.lang);
+                const prefix = output.value.length > 0 && !output.value.endsWith('\n') ? ' ' : '';
+                output.value += prefix + finalTranscript;
+                localStorage.setItem('voiceNoteDraft', output.value);
+                updateCounters();
+                output.scrollTop = output.scrollHeight;
+            }
+        };
+    }
+
+    langSelect.addEventListener('change', () => {
+        const lang = langSelect.value;
+        if (isRecording) {
+            shouldBeRecording = true;
+            recognition.stop();
+        }
+        output.dir = lang === 'he-IL' ? 'rtl' : 'ltr';
+    });
+
+    // --- UI Actions & Helpers ---
+    function toggleTheme() {
+        const root = document.documentElement;
+        const isDark = root.getAttribute('data-theme') === 'dark';
+        if (isDark) { root.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); updateThemeIcon(false); }
+        else { root.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); updateThemeIcon(true); }
+    }
+
+    function updateThemeIcon(isDark) {
+        if(isDark) themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+        else themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+    }
+
+    function toggleHistory() { 
+        const el = document.getElementById('historyModal');
+        if (!el.classList.contains('open')) {
+            renderHistory(); 
+            // איפוס חיפוש
+            document.getElementById('historySearch').value = '';
+        }
+        el.classList.toggle('open');
+    }
+    
+    function toggleInstall() {
+        document.getElementById('installModal').classList.toggle('open');
+    }
+
+    async function copyText(btn) {
+        if (!output.value) return;
+        try { 
+            await navigator.clipboard.writeText(output.value); 
+            feedback(btn, 'הועתק');
+        } catch (err) {}
+    }
+
+    function saveFile(btn) {
+        if (!output.value) return;
+        const blob = new Blob([output.value], { type: 'text/plain' });
+        const link = document.createElement('a');
+        const date = new Date();
+        link.download = `VoiceNote_${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}.txt`;
+        link.href = window.URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        feedback(btn, 'הורד');
+    }
+
+    async function shareText(btn) {
+        if (!output.value) return;
+        if (navigator.share) { try { await navigator.share({ title: 'הערה קולית', text: output.value }); } catch (err) {} }
+        else { window.location.href = `mailto:?body=${encodeURIComponent(output.value)}`; }
+    }
+    
+    function feedback(btn, text) {
+        const originalHtml = btn.innerHTML;
+        btn.classList.add('active-action');
+        btn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> ${text}`;
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.classList.remove('active-action');
+        }, 1500);
+    }
+    
+    window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('open'); }
+</script>
+
+</body>
+</html>
