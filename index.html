@@ -6,763 +6,464 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="VoiceNote">
+    <meta name="apple-mobile-web-app-title" content="Pandavoice">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#10b981">
     
-    <title>VoiceNote Ultimate</title>
+    <title>Pandavoice Cloud</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%232563eb%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2260%22>🎙️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐼</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%2310b981%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2260%22>🐼</text></svg>">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <style>
         :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --danger-color: #ef4444;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #0f172a;
-            --text-secondary: #64748b;
-            --border-color: #e2e8f0;
-            --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            --history-item-bg: #f1f5f9;
-            --safe-area-top: env(safe-area-inset-top);
-            --safe-area-bottom: env(safe-area-inset-bottom);
+            --primary: #10b981; 
+            --primary-bg: #ecfdf5;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --danger: #ef4444;
+            --whatsapp: #25D366;
+            --radius: 24px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
 
         [data-theme="dark"] {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border-color: #334155;
-            --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
-            --history-item-bg: #334155;
+            --primary: #34d399;
+            --primary-bg: #064e3b;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --bg: #111827;
+            --card: #1f2937;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s; }
-
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 15px;
-            padding-top: max(15px, var(--safe-area-top));
-            padding-bottom: max(15px, var(--safe-area-bottom));
+            margin: 0; padding: 15px;
+            background: var(--bg); color: var(--text-main);
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
         }
 
-        .container {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 600px;
-            border-radius: 20px;
+        .app-container {
+            background: var(--card);
+            width: 100%; max-width: 500px; height: 100%; max-height: 900px;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            height: 90vh; /* גובה מותאם */
-            max-height: 1000px;
-            overflow: hidden;
-            position: relative;
-            border: 1px solid var(--border-color);
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+            border: 1px solid var(--border);
         }
 
-        /* --- Header --- */
+        /* אייקונים */
+        svg { width: 24px; height: 24px; display: block; }
+        .icon-stroke { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .icon-fill { fill: currentColor; stroke: none; }
+
+        /* Header */
         header {
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 15px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--card); z-index: 10;
         }
-
-        .header-left { display: flex; gap: 8px; align-items: center; }
-        .header-right { display: flex; gap: 6px; align-items: center; }
-
-        .app-title { font-size: 1.1rem; font-weight: 800; color: var(--primary-color); display: flex; align-items: center; gap: 6px; }
         
-        select {
-            padding: 6px 4px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-color);
-            color: var(--text-color);
-            font-size: 0.8rem;
-            outline: none;
-            font-weight: 500;
-        }
-
-        .icon-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-secondary);
-            padding: 8px;
-            border-radius: 50%;
+        /* התיקון שהיה חסר: סידור הכפתורים בשורה */
+        .header-actions {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 8px;
         }
-        .icon-btn:hover { color: var(--primary-color); background: rgba(0,0,0,0.05); }
-        .icon-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+        .brand { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .brand span { color: var(--primary); }
         
-        /* Font size controls */
-        .font-controls { display: flex; background: var(--bg-color); border-radius: 8px; margin-left: 5px; border: 1px solid var(--border-color); overflow: hidden; }
-        .font-btn { border: none; background: none; padding: 6px 10px; cursor: pointer; color: var(--text-color); font-size: 0.85rem; font-weight: bold; }
-        .font-btn:first-child { border-left: 1px solid var(--border-color); }
-        .font-btn:active { background: rgba(0,0,0,0.1); }
+        .btn-icon {
+            width: 40px; height: 40px; border-radius: 12px;
+            border: 1px solid var(--border); background: transparent; color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .btn-icon:hover { color: var(--primary); border-color: var(--primary); background: var(--bg); }
+        .btn-font { font-size: 0.9rem; font-weight: 700; width: 36px; }
 
-        /* --- Main --- */
-        main { flex: 1; position: relative; display: flex; flex-direction: column; }
+        /* Toolbar */
+        .toolbar { padding: 12px; display: flex; gap: 10px; background: var(--bg); }
+        .tool-btn {
+            flex: 1; border: none; padding: 12px; border-radius: 12px;
+            font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 0.9rem; transition: 0.2s;
+        }
+        .btn-ai { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .btn-tts { background: var(--card); color: var(--text-main); border: 1px solid var(--border); }
+        .tool-btn:active { transform: scale(0.96); }
 
+        /* Main */
+        main { flex: 1; position: relative; display: flex; flex-direction: column; background: var(--card); }
+        
         textarea {
-            flex: 1;
-            width: 100%;
-            border: none;
-            padding: 20px 20px 60px 20px;
-            resize: none;
-            font-size: 20px; /* ברירת מחדל גדולה יותר */
-            line-height: 1.5;
-            outline: none;
-            background: transparent;
-            color: var(--text-color);
+            flex: 1; width: 100%; border: none; padding: 20px; padding-bottom: 120px;
+            font-size: 1.2rem; line-height: 1.5; resize: none; outline: none;
+            background: transparent; color: var(--text-main);
         }
 
-        .counters {
-            position: absolute;
-            bottom: 100px;
-            left: 20px;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            background: var(--card-bg);
-            padding: 4px 8px;
-            border-radius: 6px;
-            pointer-events: none;
-            opacity: 0.8;
-            border: 1px solid var(--border-color);
-            z-index: 5;
-            font-weight: 500;
+        /* Mic */
+        .mic-wrapper {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; justify-content: center; align-items: center; z-index: 5;
         }
-
-        /* --- Record Button --- */
-        .record-wrapper {
-            position: absolute;
-            bottom: 90px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
+        .mic-btn {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: var(--text-main); color: white; border: 4px solid var(--card);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.3s; z-index: 2;
         }
-
-        #recordBtn {
-            width: 76px;
-            height: 76px;
-            border-radius: 50%;
-            border: none;
-            background: var(--primary-color);
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .mic-btn svg { width: 32px; height: 32px; }
         
-        #recordBtn:active { transform: scale(0.95); }
-
-        #recordBtn svg { width: 36px; height: 36px; fill: currentColor; }
-
-        #recordBtn.recording {
-            background-color: var(--danger-color);
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            animation: pulse-red 1.5s infinite;
+        .recording .mic-btn { background: var(--danger); transform: scale(1.1); }
+        .mic-ring {
+            position: absolute; width: 100%; height: 100%; border-radius: 50%;
+            background: var(--danger); opacity: 0; z-index: 1;
         }
+        .recording .mic-ring { animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.2); opacity: 0; } }
 
-        @keyframes pulse-red {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-
-        /* --- Footer --- */
+        /* Footer */
         footer {
-            padding: 12px;
-            background: var(--bg-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid var(--border-color);
-            gap: 10px;
+            padding: 10px; border-top: 1px solid var(--border); background: var(--card);
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
         }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            background: none; border: none; cursor: pointer; color: var(--text-muted);
+            padding: 8px 0; border-radius: 8px;
+        }
+        .nav-item:active { background: var(--bg); }
+        .nav-item span { font-size: 0.7rem; font-weight: 600; }
+        .whatsapp { color: var(--whatsapp); }
 
-        .action-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            color: var(--text-secondary);
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 10px 5px;
-            border-radius: 12px;
-            flex: 1;
-            transition: all 0.2s;
+        /* Cloud Indicator */
+        .cloud-status {
+            position: absolute; top: 10px; left: 10px; font-size: 0.7rem; 
+            display: flex; align-items: center; gap: 4px; color: var(--text-muted);
+            background: var(--bg); padding: 4px 8px; border-radius: 20px; opacity: 0; transition: 0.3s;
         }
+        .cloud-status.show { opacity: 1; }
+        .cloud-status.saved { color: var(--primary); }
 
-        .action-btn:active { transform: scale(0.95); }
-        .action-btn.active-action { color: var(--primary-color); border-color: var(--primary-color); background: rgba(37, 99, 235, 0.05); }
-        .action-btn.btn-clear:active { color: var(--danger-color); border-color: var(--danger-color); background: #fee2e2; }
-        .action-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
-
-        /* --- Modals --- */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-            backdrop-filter: blur(4px);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .modal.open { display: flex; opacity: 1; }
-        
-        .modal-content {
-            background: var(--card-bg);
-            border-radius: 20px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 85vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-            overflow: hidden;
-            transform: translateY(20px);
-            transition: transform 0.3s;
-        }
-        .modal.open .modal-content { transform: translateY(0); }
-        
-        .modal-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--bg-color);
-        }
-        .modal-header h3 { margin: 0; color: var(--text-color); font-size: 1.1rem; }
-        .close-btn { background: none; border: none; font-size: 1.8rem; line-height: 1; cursor: pointer; color: var(--text-secondary); padding: 0 5px; }
-
-        .modal-body { padding: 0; overflow-y: auto; display: flex; flex-direction: column; }
-        
-        /* Search Bar inside History */
-        .search-container {
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            background: var(--card-bg);
-            z-index: 5;
-        }
-        .search-input {
-            width: 100%;
-            padding: 10px 15px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-color);
-            color: var(--text-color);
-            font-size: 1rem;
-            outline: none;
-        }
-        .search-input:focus { border-color: var(--primary-color); }
-
-        .history-list { list-style: none; padding: 15px; }
-        .history-item {
-            background: var(--history-item-bg);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .history-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500; }
-        .history-preview { font-size: 1rem; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 12px; }
-        
-        .history-actions { display: flex; gap: 10px; justify-content: flex-end; }
-        .btn-small { padding: 6px 12px; border-radius: 6px; border: none; font-size: 0.8rem; cursor: pointer; font-weight: 500; }
-        .btn-load { background: var(--primary-color); color: white; }
-        .btn-del { background: #fee2e2; color: var(--danger-color); }
-
-        .export-section { padding: 15px; border-top: 1px solid var(--border-color); text-align: center; background: var(--bg-color); }
-        .btn-export-all { width: 100%; padding: 12px; background: var(--text-color); color: var(--bg-color); border: none; border-radius: 10px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        
-        /* Installation Instructions */
-        .install-guide { padding: 20px; line-height: 1.6; font-size: 0.95rem; color: var(--text-color); }
-        .install-guide ol { padding-right: 20px; margin-top: 10px; }
-        .install-guide li { margin-bottom: 8px; }
-
-        .status-msg {
-            position: absolute;
-            top: 20px; left: 50%; transform: translateX(-50%);
-            background: var(--primary-color); color: white;
-            padding: 6px 16px; border-radius: 20px; font-size: 0.85rem;
-            font-weight: 500;
-            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
-            opacity: 0; transition: opacity 0.3s; pointer-events: none;
-            z-index: 20;
-        }
-        .status-msg.visible { opacity: 1; }
-        
-        /* Scrollbar styling */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #475569; }
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(3px); }
+        .modal.open { display: flex; }
+        .modal-box { background: var(--card); padding: 25px; border-radius: 24px; width: 100%; max-width: 400px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text-main); }
+        .save-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; }
 
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="app-container">
     <header>
-        <div class="header-right">
-            <button class="icon-btn" onclick="toggleHistory()" title="היסטוריה וחיפוש">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <div class="header-actions">
+            <button class="btn-icon" onclick="toggleSettings()">
+                <svg class="icon-stroke" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </button>
-            <div class="font-controls">
-                <button class="font-btn" onclick="changeFontSize(2)">A+</button>
-                <button class="font-btn" onclick="changeFontSize(-2)">A-</button>
-            </div>
+            <button class="btn-icon" onclick="toggleTheme()">
+                <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
         </div>
-        
-        <div class="app-title">VoiceNote</div>
-
-        <div class="header-left">
-            <button class="icon-btn" onclick="toggleInstall()" title="התקן אפליקציה">
-                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            </button>
-            <button class="icon-btn" onclick="toggleTheme()" title="מצב לילה">
-                <svg id="themeIcon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-            </button>
-            <select id="langSelect">
-                <option value="he-IL">עברית</option>
-                <option value="en-US">English</option>
-            </select>
+        <div class="brand">🐼 <span>Pandavoice</span></div>
+        <div class="header-actions">
+            <button class="btn-icon btn-font" onclick="changeSize(2)">A+</button>
+            <button class="btn-icon btn-font" onclick="changeSize(-2)">A-</button>
         </div>
     </header>
 
+    <div class="toolbar">
+        <button class="tool-btn btn-ai" onclick="runAI(this)">
+            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+            סדר לי (AI)
+        </button>
+        <button class="tool-btn btn-tts" onclick="speakText()">
+            <svg class="icon-stroke" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+            הקרא
+        </button>
+    </div>
+
     <main>
-        <div id="status" class="status-msg">מקשיב...</div>
-        <textarea id="output" placeholder="התחל להקליט או הקלד כאן..." dir="rtl"></textarea>
-        <div class="counters" id="counters">מילים: 0 | תווים: 0</div>
+        <div id="cloudStatus" class="cloud-status">
+            <svg class="icon-stroke" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            נשמר בענן
+        </div>
+        <textarea id="output" placeholder="לחץ על המיקרופון כדי להתחיל..." dir="rtl"></textarea>
         
-        <div class="record-wrapper">
-            <button id="recordBtn" aria-label="התחל הקלטה">
-                <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+        <div class="mic-wrapper">
+            <div class="mic-ring"></div>
+            <button class="mic-btn" id="recordBtn">
+                <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
             </button>
         </div>
     </main>
 
     <footer>
-        <button class="action-btn btn-clear" onclick="clearText(true)" title="חדש ושמור בארכיון">
-            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-            חדש
+        <button class="nav-item" onclick="clearText(true)">
+            <svg class="icon-stroke" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <span>חדש</span>
         </button>
-        <button class="action-btn" onclick="copyText(this)">
-            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            העתק
+        <button class="nav-item" onclick="copyText(this)">
+            <svg class="icon-stroke" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>העתק</span>
         </button>
-        <button class="action-btn" onclick="saveFile(this)">
-            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            שמור
+        <button class="nav-item" onclick="saveFile()">
+            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            <span>שמור</span>
         </button>
-        <button class="action-btn" onclick="shareText(this)">
-            <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-            שלח
+        <button class="nav-item whatsapp" onclick="sendWhatsapp()">
+            <svg class="icon-fill" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            <span>וואטסאפ</span>
         </button>
     </footer>
 </div>
 
-<div id="installModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>התקנת האפליקציה</h3>
-            <button class="close-btn" onclick="toggleInstall()">&times;</button>
-        </div>
-        <div class="install-guide">
-            <p>כדי להתקין את האפליקציה ולעבוד במצב מסך מלא:</p>
-            <div id="ios-guide" style="display:none; margin-top:15px; background:rgba(37,99,235,0.1); padding:10px; border-radius:8px;">
-                <strong>באייפון (Safari):</strong>
-                <ol>
-                    <li>לחץ על כפתור ה"שתף" <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> למטה בדפדפן.</li>
-                    <li>גלול למטה ובחר <strong>"הוסף למסך הבית"</strong>.</li>
-                </ol>
-            </div>
-            <div id="android-guide" style="display:none; margin-top:15px; background:rgba(37,99,235,0.1); padding:10px; border-radius:8px;">
-                <strong>באנדרואיד (Chrome):</strong>
-                <ol>
-                    <li>לחץ על שלוש הנקודות <svg width="4" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg> למעלה בדפדפן.</li>
-                    <li>בחר <strong>"הוסף למסך הבית"</strong> או "התקן אפליקציה".</li>
-                </ol>
-            </div>
-             <div id="desktop-guide" style="display:none; margin-top:15px;">
-                <strong>במחשב (Chrome/Edge):</strong>
-                <ol>
-                    <li>לחץ על האייקון של המסך עם החץ בשורת הכתובת.</li>
-                    <li>או בתפריט: שמירה ושיתוף > צור קיצור דרך > סמן "פתח כחלון".</li>
-                </ol>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="historyModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>היסטוריה</h3>
-            <button class="close-btn" onclick="toggleHistory()">&times;</button>
-        </div>
-        <div class="search-container">
-            <input type="text" id="historySearch" class="search-input" placeholder="חפש בהיסטוריה..." onkeyup="filterHistory()">
-        </div>
+<div id="settingsModal" class="modal" onclick="if(event.target===this) toggleSettings()">
+    <div class="modal-box">
+        <h3 style="margin-top:0">הגדרות פנדה</h3>
+        <p style="font-size:0.9rem; color:#666">כדי שהשמירה בענן תעבוד, הזן את פרטי ה-Firebase שלך:</p>
         
-        <div class="modal-body">
-            <ul id="historyList" class="history-list">
-                </ul>
-        </div>
-        <div class="export-section">
-            <button class="btn-export-all" onclick="exportAllHistory()">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                גיבוי מלא (CSV)
-            </button>
-        </div>
+        <input type="text" id="fbApiKey" placeholder="Firebase API Key">
+        <input type="text" id="fbAuthDomain" placeholder="Auth Domain">
+        <input type="text" id="fbProjectId" placeholder="Project ID">
+        
+        <hr style="border:0; border-top:1px solid #eee; margin:20px 0">
+        
+        <p style="font-size:0.9rem; color:#666">מפתח Gemini (עבור ה-AI):</p>
+        <input type="password" id="aiApiKey" placeholder="Gemini API Key">
+        
+        <button class="save-btn" onclick="saveSettings()">שמור הגדרות</button>
     </div>
 </div>
 
 <script>
     // --- משתנים גלובליים ---
-    const recordBtn = document.getElementById('recordBtn');
-    const output = document.getElementById('output');
-    const langSelect = document.getElementById('langSelect');
-    const statusMsg = document.getElementById('status');
-    const counters = document.getElementById('counters');
-    const themeIcon = document.getElementById('themeIcon');
-    
-    let isRecording = false;
-    let shouldBeRecording = false; // למנגנון Auto Restart
+    let db = null;
     let recognition;
-    let wakeLock = null;
-    let currentFontSize = 20;
-
-    // --- אתחול ---
-    window.onload = function() {
-        // טעינת טיוטה
-        const savedText = localStorage.getItem('voiceNoteDraft');
-        if (savedText) { output.value = savedText; updateCounters(); }
+    let isRecording = false;
+    let currentSize = 20;
+    const output = document.getElementById('output');
+    const cloudStatus = document.getElementById('cloudStatus');
+    
+    // --- אתחול המערכת ---
+    window.onload = () => {
+        const theme = localStorage.getItem('theme');
+        if(theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
         
-        // טעינת עיצוב
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); updateThemeIcon(true); }
+        const draft = localStorage.getItem('draft');
+        if(draft) output.value = draft;
+
+        initFirebase();
+    };
+
+    // --- Firebase Logic (שמירה אוטומטית לענן) ---
+    function initFirebase() {
+        const apiKey = localStorage.getItem('fbApiKey');
+        const projectId = localStorage.getItem('fbProjectId');
         
-        // טעינת גודל פונט
-        const savedSize = localStorage.getItem('fontSize');
-        if (savedSize) {
-            currentFontSize = parseInt(savedSize);
-            output.style.fontSize = currentFontSize + 'px';
-        }
-
-        // זיהוי מערכת הפעלה להצגת הוראות התקנה מתאימות
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-            document.getElementById('ios-guide').style.display = 'block';
-        } else if (/android/i.test(userAgent)) {
-            document.getElementById('android-guide').style.display = 'block';
-        } else {
-            document.getElementById('desktop-guide').style.display = 'block';
-        }
-    }
-
-    // --- שמירת טיוטה בזמן אמת ---
-    output.addEventListener('input', () => {
-        localStorage.setItem('voiceNoteDraft', output.value);
-        updateCounters();
-    });
-
-    // --- ניהול גודל פונט ---
-    function changeFontSize(delta) {
-        currentFontSize += delta;
-        if (currentFontSize < 14) currentFontSize = 14;
-        if (currentFontSize > 48) currentFontSize = 48;
-        output.style.fontSize = currentFontSize + 'px';
-        localStorage.setItem('fontSize', currentFontSize);
-    }
-
-    // --- ניהול היסטוריה ---
-    function addToHistory(text) {
-        if (!text || text.trim().length < 2) return;
-        let history = JSON.parse(localStorage.getItem('voiceNoteHistory') || '[]');
-        const newEntry = { id: Date.now(), text: text, date: new Date().toLocaleString('he-IL'), lang: langSelect.value };
-        history.unshift(newEntry);
-        // שמירת 100 פריטים אחרונים
-        if (history.length > 100) history.pop();
-        localStorage.setItem('voiceNoteHistory', JSON.stringify(history));
-    }
-
-    function renderHistory(filterText = '') {
-        const list = document.getElementById('historyList');
-        let history = JSON.parse(localStorage.getItem('voiceNoteHistory') || '[]');
-        
-        // סינון לפי חיפוש
-        if (filterText) {
-            history = history.filter(item => item.text.toLowerCase().includes(filterText.toLowerCase()));
-        }
-        
-        list.innerHTML = '';
-        if (history.length === 0) { 
-            list.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:20px;">' + (filterText ? 'לא נמצאו תוצאות' : 'אין היסטוריה שמורה') + '</div>'; 
-            return; 
-        }
-
-        history.forEach(item => {
-            const li = document.createElement('li');
-            li.className = 'history-item';
-            // הדגשת מילות חיפוש אם יש
-            let displayText = item.text;
+        if (apiKey && projectId) {
+            const firebaseConfig = {
+                apiKey: apiKey,
+                authDomain: localStorage.getItem('fbAuthDomain'),
+                projectId: projectId
+            };
             
-            li.innerHTML = `
-                <div class="history-meta"><span>${item.date}</span><span>${item.text.length} תווים</span></div>
-                <div class="history-preview" dir="${item.lang === 'he-IL' ? 'rtl' : 'ltr'}">${displayText}</div>
-                <div class="history-actions">
-                    <button class="btn-small btn-del" onclick="deleteHistoryItem(${item.id})">מחק</button>
-                    <button class="btn-small btn-load" onclick="loadHistoryItem(${item.id})">טען</button>
-                </div>`;
-            list.appendChild(li);
-        });
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                db = firebase.firestore();
+                console.log("Firebase Connected");
+            } catch (e) {
+                console.error("Firebase Error", e);
+            }
+        }
     }
 
-    // --- מנוע חיפוש בהיסטוריה ---
-    function filterHistory() {
-        const input = document.getElementById('historySearch');
-        renderHistory(input.value);
-    }
-
-    function exportAllHistory() {
-        const history = JSON.parse(localStorage.getItem('voiceNoteHistory') || '[]');
-        if (history.length === 0) { alert("אין היסטוריה לייצוא"); return; }
+    function saveToCloud(text) {
+        if (!db || !text || text.length < 5) return;
         
-        let csvContent = "\uFEFFתאריך,שפה,תוכן\n";
-        history.forEach(item => {
-            let safeText = item.text.replace(/"/g, '""').replace(/\n/g, " ");
-            csvContent += `"${item.date}","${item.lang}","${safeText}"\n`;
+        cloudStatus.classList.add('show');
+        cloudStatus.innerText = "שומר לענן...";
+        
+        let userId = localStorage.getItem('userId');
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('userId', userId);
+        }
+
+        db.collection('notes').add({
+            userId: userId,
+            text: text,
+            date: new Date(),
+            device: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
+        }).then(() => {
+            cloudStatus.innerText = "✔ נשמר בענן";
+            cloudStatus.classList.add('saved');
+            setTimeout(() => cloudStatus.classList.remove('show'), 2000);
+        }).catch((err) => {
+            console.error("Cloud Save Error", err);
+            cloudStatus.innerText = "שגיאת שמירה";
         });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        const date = new Date().toISOString().slice(0,10);
-        link.href = URL.createObjectURL(blob);
-        link.download = `VoiceNote_Backup_${date}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     }
 
-    function loadHistoryItem(id) {
-        const history = JSON.parse(localStorage.getItem('voiceNoteHistory') || '[]');
-        const item = history.find(i => i.id === id);
-        if (item) {
-            if (output.value.trim() !== '' && !confirm("להחליף את הטקסט הנוכחי?")) return;
-            output.value = item.text;
-            localStorage.setItem('voiceNoteDraft', item.text);
-            updateCounters();
-            toggleHistory();
-        }
-    }
-
-    function deleteHistoryItem(id) {
-        if (!confirm("למחוק פריט זה?")) return;
-        let history = JSON.parse(localStorage.getItem('voiceNoteHistory') || '[]');
-        history = history.filter(i => i.id !== id);
-        localStorage.setItem('voiceNoteHistory', JSON.stringify(history));
-        // רענון הרשימה עם החיפוש הנוכחי
-        filterHistory(); 
-    }
-
-    function clearText(manual = false) {
-        if (output.value.trim() === '') return;
-        addToHistory(output.value);
-        const btn = document.querySelector('.btn-clear');
-        const originalHtml = btn.innerHTML;
-        output.value = "";
-        localStorage.setItem('voiceNoteDraft', "");
-        updateCounters();
-        if (manual) {
-            btn.classList.add('active-action');
-            btn.innerHTML = `✔ נשמר`;
-            setTimeout(() => {
-                btn.innerHTML = originalHtml;
-                btn.classList.remove('active-action');
-            }, 1500);
-        }
-    }
-
-    function updateCounters() {
-        const text = output.value;
-        const charCount = text.length;
-        const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-        counters.innerText = `מילים: ${wordCount} | תווים: ${charCount}`;
-    }
-
-    // --- זיהוי דיבור משופר ---
+    // --- Speech Recognition ---
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SR();
         recognition.continuous = true;
         recognition.interimResults = true;
-    } else {
-        alert("הדפדפן לא נתמך. אנא השתמש ב-Google Chrome.");
-        recordBtn.disabled = true;
-    }
+        recognition.lang = 'he-IL';
 
-    function replaceCommands(text, lang) {
-        if (lang === 'he-IL') {
-            return text.replace(/נקודה/g, ".").replace(/פסיק/g, ",").replace(/סימן שאלה/g, "?").replace(/סימן קריאה/g, "!").replace(/שורה חדשה/g, "\n");
-        }
-        return text;
-    }
-
-    recordBtn.addEventListener('click', () => {
-        if (!recognition) return;
-        if (isRecording) {
-            shouldBeRecording = false;
-            recognition.stop();
-        } else {
-            shouldBeRecording = true;
-            recognition.lang = langSelect.value;
-            recognition.start();
-        }
-    });
-
-    if (recognition) {
-        recognition.onstart = async () => {
+        recognition.onstart = () => {
             isRecording = true;
-            recordBtn.classList.add('recording');
-            statusMsg.classList.add('visible');
-            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+            document.body.classList.add('recording');
+            playBeep('start');
         };
 
         recognition.onend = () => {
             isRecording = false;
-            if (shouldBeRecording) {
-                // Auto-Restart Logic
-                try { recognition.start(); return; } catch(err) { shouldBeRecording = false; }
-            }
-            recordBtn.classList.remove('recording');
-            statusMsg.classList.remove('visible');
-            if (wakeLock) wakeLock.release().then(()=>wakeLock=null);
+            document.body.classList.remove('recording');
+            playBeep('end');
+            saveToCloud(output.value);
         };
 
         recognition.onresult = (event) => {
-            let interimTranscript = '';
-            let finalTranscript = '';
+            let final = '';
             for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
-                else interimTranscript += event.results[i][0].transcript;
+                if (event.results[i].isFinal) final += event.results[i][0].transcript;
             }
-            if (finalTranscript) {
-                finalTranscript = replaceCommands(finalTranscript, recognition.lang);
-                const prefix = output.value.length > 0 && !output.value.endsWith('\n') ? ' ' : '';
-                output.value += prefix + finalTranscript;
-                localStorage.setItem('voiceNoteDraft', output.value);
-                updateCounters();
+            if (final) {
+                final = final.replace(/נקודה/g, ".").replace(/פסיק/g, ",");
+                const prefix = (output.value && !output.value.endsWith('\n')) ? ' ' : '';
+                output.value += prefix + final;
+                localStorage.setItem('draft', output.value);
                 output.scrollTop = output.scrollHeight;
             }
         };
+
+        document.getElementById('recordBtn').onclick = () => {
+            if (isRecording) recognition.stop(); else recognition.start();
+        };
+    } else {
+        alert("דפדפן זה לא תומך בדיבור. באייפון השתמש ב-Safari (יש ללחוץ ידנית על המיקרופון), באנדרואיד ב-Chrome.");
     }
 
-    langSelect.addEventListener('change', () => {
-        const lang = langSelect.value;
-        if (isRecording) {
-            shouldBeRecording = true;
-            recognition.stop();
+    // --- AI Logic ---
+    async function runAI(btn) {
+        const text = output.value;
+        const apiKey = localStorage.getItem('aiApiKey');
+        
+        if(!apiKey) return toggleSettings();
+        if(!text) return;
+
+        const orgHtml = btn.innerHTML;
+        btn.innerHTML = "חושב...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ contents: [{ parts: [{ text: `Fix Hebrew text punctuation/grammar: ${text}` }] }] })
+            });
+            const data = await res.json();
+            if(data.candidates) {
+                output.value = data.candidates[0].content.parts[0].text.trim();
+                localStorage.setItem('draft', output.value);
+                saveToCloud(output.value);
+            }
+        } catch(e) {
+            alert("שגיאת AI");
+        } finally {
+            btn.innerHTML = orgHtml;
+            btn.disabled = false;
         }
-        output.dir = lang === 'he-IL' ? 'rtl' : 'ltr';
-    });
-
-    // --- UI Actions & Helpers ---
-    function toggleTheme() {
-        const root = document.documentElement;
-        const isDark = root.getAttribute('data-theme') === 'dark';
-        if (isDark) { root.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); updateThemeIcon(false); }
-        else { root.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); updateThemeIcon(true); }
     }
 
-    function updateThemeIcon(isDark) {
-        if(isDark) themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
-        else themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-    }
-
-    function toggleHistory() { 
-        const el = document.getElementById('historyModal');
-        if (!el.classList.contains('open')) {
-            renderHistory(); 
-            // איפוס חיפוש
-            document.getElementById('historySearch').value = '';
-        }
+    // --- Helpers ---
+    function toggleSettings() {
+        const el = document.getElementById('settingsModal');
         el.classList.toggle('open');
-    }
-    
-    function toggleInstall() {
-        document.getElementById('installModal').classList.toggle('open');
-    }
-
-    async function copyText(btn) {
-        if (!output.value) return;
-        try { 
-            await navigator.clipboard.writeText(output.value); 
-            feedback(btn, 'הועתק');
-        } catch (err) {}
+        if(el.classList.contains('open')) {
+            document.getElementById('fbApiKey').value = localStorage.getItem('fbApiKey') || '';
+            document.getElementById('fbAuthDomain').value = localStorage.getItem('fbAuthDomain') || '';
+            document.getElementById('fbProjectId').value = localStorage.getItem('fbProjectId') || '';
+            document.getElementById('aiApiKey').value = localStorage.getItem('aiApiKey') || '';
+        }
     }
 
-    function saveFile(btn) {
-        if (!output.value) return;
-        const blob = new Blob([output.value], { type: 'text/plain' });
-        const link = document.createElement('a');
-        const date = new Date();
-        link.download = `VoiceNote_${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}.txt`;
-        link.href = window.URL.createObjectURL(blob);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        feedback(btn, 'הורד');
+    function saveSettings() {
+        localStorage.setItem('fbApiKey', document.getElementById('fbApiKey').value.trim());
+        localStorage.setItem('fbAuthDomain', document.getElementById('fbAuthDomain').value.trim());
+        localStorage.setItem('fbProjectId', document.getElementById('fbProjectId').value.trim());
+        localStorage.setItem('aiApiKey', document.getElementById('aiApiKey').value.trim());
+        toggleSettings();
+        initFirebase();
+        alert("הגדרות נשמרו! רענן את הדף.");
     }
 
-    async function shareText(btn) {
-        if (!output.value) return;
-        if (navigator.share) { try { await navigator.share({ title: 'הערה קולית', text: output.value }); } catch (err) {} }
-        else { window.location.href = `mailto:?body=${encodeURIComponent(output.value)}`; }
+    function toggleTheme() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
     }
-    
-    function feedback(btn, text) {
-        const originalHtml = btn.innerHTML;
-        btn.classList.add('active-action');
-        btn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> ${text}`;
-        setTimeout(() => {
-            btn.innerHTML = originalHtml;
-            btn.classList.remove('active-action');
-        }, 1500);
+
+    function changeSize(d) {
+        currentSize = Math.max(16, Math.min(32, currentSize + d));
+        output.style.fontSize = `${currentSize}px`;
     }
-    
-    window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('open'); }
+
+    function clearText(conf) {
+        if(conf && !confirm("למחוק?")) return;
+        output.value = ""; localStorage.setItem('draft', "");
+    }
+
+    function copyText(btn) {
+        navigator.clipboard.writeText(output.value);
+        const s = btn.querySelector('span'); const o = s.innerText;
+        s.innerText = "הועתק"; setTimeout(()=>s.innerText=o, 1500);
+    }
+
+    function saveFile() {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([output.value], {type:'text/plain'}));
+        a.download = `Note_${new Date().toISOString().slice(0,10)}.txt`;
+        a.click();
+    }
+
+    function sendWhatsapp() {
+        window.open(`https://wa.me/?text=${encodeURIComponent(output.value)}`);
+    }
+
+    function speakText() {
+        const u = new SpeechSynthesisUtterance(output.value); u.lang='he-IL';
+        window.speechSynthesis.speak(u);
+    }
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(type) {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.type = 'sine'; o.frequency.value = type==='start'?600:400;
+        g.gain.value=0.1; o.start(); o.stop(audioCtx.currentTime+0.1);
+    }
 </script>
 
 </body>
